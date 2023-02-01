@@ -53,6 +53,7 @@ userSchema.virtual("friendsCount", {
   foreignField: "userId",
 });
 
+
 const User = model("user", userSchema);
 
 module.exports = User;

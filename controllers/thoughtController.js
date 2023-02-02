@@ -15,28 +15,31 @@ module.exports = {
   },
   //Getting a single thought using findOne() by thought_id, or error
   getSingleThought(req, res) {
-    Thought.findOne({ _id: req.params.thoughtId })
+    Thought.findOne({ _id: req.params.id })
     .populate({
         path: 'reactions',
         select: '-__v'
       })
       .select('-__v')
-      .sort({ _id: -1 })
-      .then((thought) =>
-        !thought
-          ? res.status(400).json({ message: "No thought with that ID" })
-          : res.json(thought)
-      )
+      //.sort({ _id: -1 })
+      .then((thought) => { if
+        (!thought) {
+          
+      res.status(400).json({ message: "No thought with that ID" })
+        }
+        return res.json(thought)
+       
+  })
       .catch((err) => res.status(500).json(err));
   },
 
-  //creating a new thought accepting req.body including the entire Thought object. User who create the thought needs to be updated, thoughtId added to thought array.
+  //creating a new thought accepting req.body including the entire Thought object.The  User who creates the thought needs to be updated, thoughtId added to thought array.
   createThought(req, res) {
     Thought.create(req.body)
-      .then((thought) => {
+      .then(({ _id }) => {
         return User.findOneAndUpdate(
           { _id: req.body.userId },
-          { $addToSet: { applications: application._id } },
+          { $addToSet: { thoughts: _id } },
           { new: true }
         );
       })
@@ -55,7 +58,7 @@ module.exports = {
   //Updates a thought using findOneAndUpdate(). Updates by Id and uses $set operator to put in the req.body - validation required. 
   updateThought(req, res) {
     Thought.findOneAndUpdate(
-        {_id: req.params.thoughtId },
+        {_id: req.params.id },
         { $set: req.body },
         { runValidators: true, new: true }
     ).then((thought) => !thought ? res.status(400).json({message: 'No thought with that Id!'}) : res.json(thought)).catch((err) => {
@@ -65,13 +68,13 @@ module.exports = {
   },
   //DEletes a thought by thoughId. Then, if thought exists, we look for the user (owner) of the thought and update the thought array for the user in order to avoid orphaned data. 
   deleteThought(req, res) {
-    Thought.findOneAndRemove({ _id: req.params.thoughtId })
+    Thought.findOneAndRemove({ _id: req.params.id })
       .then((thought) =>
         !thought
           ? res.status(404).json({ message: 'No thought with this id!' })
           : User.findOneAndUpdate(
-              { thoughts: req.params.thoughtId },
-              { $pull: { thoughts: req.params.thoughtId } },
+              { thoughts: req.params.id },
+              { $pull: { thoughts: req.params.id } },
               { new: true }
             )
       )
@@ -87,7 +90,7 @@ module.exports = {
   //Add a reaction to a thought, adding the body of the reaction using $addToSet.
   addReaction(req, res) {
     Thought.findOneAndUpdate(
-      { _id: req.params.thoughtId },
+      { _id: req.params.id },
       { $addToSet: { reactions: req.body } },
       { runValidators: true, new: true }
     )
@@ -103,7 +106,7 @@ module.exports = {
   // Remove reactions to thought. This method finds a thought based on ID. It then updates the reactions array associated with the thought in question by removing it's reactionId from the reactions array.
   removeReaction(req, res) {
     Thought.findOneAndUpdate(
-      { _id: req.params.thoughtId },
+      { _id: req.params.id },
       { $pull: { reactions: { reactionId: req.params.reactionsId } } },
       { runValidators: true, new: true }
     )

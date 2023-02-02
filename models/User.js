@@ -4,14 +4,14 @@ const { Schema, model } = require("mongoose");
 const userSchema = new Schema(
   {
     username: {
-      String,
+      type: String,
       required: true,
       unique: true,
       max_length: 50,
-      trimmed: true,
+      trim: true
     },
     email: {
-      String,
+      type: String,
       required: true,
       unique: true,
       validate: {
@@ -47,12 +47,9 @@ const userSchema = new Schema(
 );
 
 // Create a virtual property `fullName` that gets and sets the user's full name
-userSchema.virtual("friendsCount", {
-  ref: "User",
-  localField: "_id",
-  foreignField: "userId",
-});
-
+userSchema.virtual("friendsCount").get(function () {
+  return this.friends.length;
+}); 
 
 const User = model("user", userSchema);
 

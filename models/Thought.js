@@ -33,19 +33,19 @@ const reactionSchema = new Schema(
   }
 );
 
-// Schema to create Post model
+// Schema to create thought model
 const thoughtSchema = new Schema(
   {
     text: {
-      String,
+      type: String,
       required: true,
       maxLength: 280,
     },
 
     username: {
-      String,
+      type: String,
       required: true,
-      trim: true
+      trim: true,
     },
 
     reactions: [reactionSchema],

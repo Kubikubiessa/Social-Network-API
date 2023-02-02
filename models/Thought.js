@@ -5,6 +5,7 @@ const reactionSchema = new Schema(
   {
     reactionId: {
       type: Schema.Types.ObjectId,
+      //making a new ide upon creation
       default: () => new Types.ObjectId(),
     },
     reactionBody: {
